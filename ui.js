@@ -108,7 +108,7 @@ export function renderEntriesTable() {
         actionsHTML += `<button class="btn-danger" data-action="remove-entry" data-index="${index}">Rem</button>`;
 
         row.innerHTML = `
-            <td class="${sailClass}" data-action="${timerOn ? 'sail-click' : ''}" data-index="${index}">${escapeHtml(entry.sailNumber)}</td>
+            <td class="${sailClass}" ${timerOn ? 'data-action="sail-click"' : ''} data-index="${index}">${escapeHtml(entry.sailNumber)}</td>
             <td>${escapeHtml(entry.boatClass)}</td>
             <td>${escapeHtml(entry.skipper)}</td>
             <td>${escapeHtml(entry.yardstick)}</td>
@@ -204,7 +204,7 @@ export function renderShortCourseSessionRaces() {
 
                 rows += `
                     <tr data-entry-index="${entryIdx}">
-                        <td class="${sailClass}" data-action="${timerOn ? 'sail-click' : ''}" data-index="${entryIdx}" data-sc-index="${sessionIdx}">${escapeHtml(entry.sailNumber)}</td>
+                        <td class="${sailClass}" ${timerOn ? 'data-action="sail-click"' : ''} data-index="${entryIdx}" data-sc-index="${sessionIdx}">${escapeHtml(entry.sailNumber)}</td>
                         <td>${escapeHtml(entry.boatClass)}</td>
                         <td>${escapeHtml(entry.skipper)}</td>
                         <td>${escapeHtml(entry.yardstick)}</td>

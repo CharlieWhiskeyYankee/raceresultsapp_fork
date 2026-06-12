@@ -1,0 +1,513 @@
+/* ============================================================
+   Lysterfield Sailing Club Results App — Stylesheet
+   ============================================================ */
+
+/* --- Base & Layout --- */
+body {
+    font-family: Arial, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f0f8ff;
+}
+h1, h2, h3 {
+    color: #003366;
+}
+h4 {
+    color: #003366;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 3px;
+}
+.division-results-header {
+    color: #003366;
+    margin-top: 25px;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #003366;
+}
+.container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.hidden { display: none !important; }
+.hidden-initial { display: none !important; }
+
+/* --- Forms --- */
+.form-group {
+    margin-bottom: 15px;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Allow inputs/selects in specific containers to be auto width */
+.filter-group select, .filter-group input,
+.series-select select, .series-select input,
+.short-course-race-entry select, .short-course-race-entry input,
+#entries-table .table-entry-select, #entries-table .table-entry-input,
+#short-course-pool-table .table-entry-select {
+    width: auto;
+    padding: 4px 6px;
+    font-size: 13px;
+}
+
+/* Make time inputs wider in short course table and standard entries table */
+.short-course-race-entry input[type="text"],
+#entries-table .table-entry-input[type="text"] {
+    min-width: 80px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+.checkbox-group label {
+    display: inline;
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+.entry-form, #boat-list-form {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+.status-option { display: flex; align-items: center; margin: 10px 0; }
+.status-option input[type="radio"] {
+    width: auto;
+    margin-right: 8px;
+    padding: 0;
+    vertical-align: middle;
+}
+.status-option label {
+    display: inline;
+    margin-bottom: 0;
+    font-weight: normal;
+    vertical-align: middle;
+}
+.entry-buttons { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+
+/* --- Buttons --- */
+button {
+    background-color: #003366;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+button:hover { background-color: #004080; }
+
+.btn-secondary { background-color: #4682B4; }
+.btn-secondary:hover { background-color: #5891c4; }
+.btn-warning { background-color: #ff9800; }
+.btn-warning:hover { background-color: #e68a00; }
+.btn-danger { background-color: #dc3545; }
+.btn-danger:hover { background-color: #c82333; }
+.btn-edit { background-color: #28a745; }
+.btn-edit:hover { background-color: #218838; }
+.btn-save { background-color: #17a2b8; }
+.btn-save:hover { background-color: #138496; }
+.btn-create-race { background-color: #ff9800; }
+.btn-create-race:hover { background-color: #e68a00; }
+.btn-timer-disabled-look {
+    background-color: #aaaaaa;
+    color: #444444;
+    cursor: not-allowed;
+}
+.btn-timer-disabled-look:hover { background-color: #999999; }
+
+/* Style for the larger FINISH button */
+.fin-btn {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    font-weight: bold;
+}
+
+/* Styling for action buttons in short course race tables */
+.short-course-race-table .actions button {
+    min-width: 45px;
+    padding: 4px 8px;
+    font-size: 11px;
+}
+.short-course-race-table .actions { gap: 8px; }
+
+/* --- Tables --- */
+.results-table, #boat-list-table, #entries-table, .short-course-race-table, #short-course-pool-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+.results-table th, #boat-list-table th, #entries-table th,
+.short-course-race-table th, #short-course-pool-table th {
+    background-color: #003366;
+    color: white;
+    text-align: left;
+    padding: 6px 8px;
+    font-weight: bold;
+}
+.results-table td, #boat-list-table td, #entries-table td,
+.short-course-race-table td, #short-course-pool-table td {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+.results-table tr:nth-child(even), #boat-list-table tr:nth-child(even),
+#entries-table tr:nth-child(even), .short-course-race-table tr:nth-child(even),
+#short-course-pool-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+.results-table tr:hover, #boat-list-table tr:hover,
+#entries-table tr:hover, .short-course-race-table tr:hover,
+#short-course-pool-table tr:hover {
+    background-color: #a5ff9a;
+}
+.results-output-container table { margin-bottom: 20px; }
+
+/* Table column widths */
+#boat-list-table th:last-child, #boat-list-table td:last-child { width: auto; min-width: 100px; text-align: center; }
+#entries-table th:nth-child(5), #entries-table td:nth-child(5) { width: 80px; text-align: center; }
+#entries-table th:nth-child(6), #entries-table td:nth-child(6) { width: 120px; }
+#entries-table th:nth-child(7), #entries-table td:nth-child(7) { width: 150px; }
+#entries-table th:last-child, #entries-table td:last-child { width: 130px; min-width: 130px; text-align: center; }
+#short-course-pool-table th:nth-child(5), #short-course-pool-table td:nth-child(5) { width: 80px; text-align: center; }
+#short-course-pool-table th:nth-child(6), #short-course-pool-table td:nth-child(6) { width: 130px; min-width: 130px; text-align: center; }
+.short-course-race-table th:nth-child(5), .short-course-race-table td:nth-child(5) { width: 120px; }
+.short-course-race-table th:nth-child(6), .short-course-race-table td:nth-child(6) { width: 150px; }
+.short-course-race-table th:last-child, .short-course-race-table td:last-child { width: 130px; min-width: 130px; text-align: center; }
+.series-results-table td, .series-results-table th { white-space: nowrap; }
+.series-results-table .nr-cell { color: #999; font-style: italic; text-align: center; }
+
+/* --- Interactive Sail Number --- */
+.sail-number-btn {
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.2s, color 0.2s;
+    user-select: none;
+    color: #003366;
+    border-radius: 4px;
+}
+#entries-table tr:nth-child(odd) .sail-number-btn,
+.short-course-race-table tr:nth-child(odd) .sail-number-btn {
+    background-color: #98FB98;
+}
+#entries-table tr:nth-child(even) .sail-number-btn,
+.short-course-race-table tr:nth-child(even) .sail-number-btn {
+    background-color: #90EE90;
+}
+.sail-number-btn:hover {
+    background-color: #32CD32 !important;
+    color: white;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+}
+.sail-number-btn.finished {
+    background-color: #dc3545 !important;
+    color: white !important;
+    animation: pulse-red 0.5s;
+}
+.sail-number-btn.finished:hover { background-color: #bd2130 !important; }
+
+@keyframes pulse-red {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* --- Results / Series --- */
+.discarded { text-decoration: line-through; color: #888; font-style: italic; }
+.legend { font-size: 12px; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px; }
+.legend span { margin-right: 5px; display: inline-block; }
+.legend strong { margin-right: 10px; }
+.legend .discarded-example { text-decoration: line-through; font-style: italic; color: #888; }
+.result-highlight { background-color: #fffce8 !important; }
+
+/* --- Tabs --- */
+.tab-buttons { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px; }
+.tab-buttons button { margin-right: 0; }
+.tab-content { display: none; }
+.active-tab { display: block; }
+.active-button { background-color: #0056b3; }
+
+/* --- Series Management --- */
+.series-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.series-select { margin-bottom: 20px; }
+.series-date { margin-top: 10px; }
+.action-buttons { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+.action-buttons button { margin-right: 0; }
+
+/* --- Race Cards --- */
+.race-card {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+}
+.race-card h3 { margin-top: 0; margin-bottom: 10px; }
+.race-info { display: flex; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; }
+.race-actions { margin-top: 10px; }
+#series-list .race-card { padding: 10px; margin-bottom: 10px; }
+#series-list .race-card .series-card-details {
+    font-size: 13px;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+#series-list .race-card .race-actions button { padding: 4px 8px; font-size: 12px; }
+
+/* --- Race Entry / Race Selector --- */
+.edit-mode-warning {
+    background-color: #fff3cd;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+.race-view-container { margin-top: 15px; }
+.race-selector { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+.race-selector button { padding: 5px 10px; font-size: 12px; }
+.race-button { background-color: #f2f2f2; color: #333; border: 1px solid #ddd; }
+.race-button.active { background-color: #003366; color: white; }
+.race-button.has-results { border: 2px solid #28a745; }
+
+/* --- Race Start Widget & Timer --- */
+.race-start-widget, .sc-race-controls {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #b0c4de;
+    background-color: #f0f8ff;
+    border-radius: 8px;
+}
+.race-start-widget button, .sc-race-controls button { margin-left: 5px; margin-right: 5px; }
+.start-time-display {
+    font-size: 1.5em;
+    color: #003366;
+    background-color: #d6eaff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin: 0 auto 10px auto;
+    border: 1px solid #add8e6;
+    display: block;
+    width: -moz-fit-content;
+    width: fit-content;
+    font-family: 'Courier New', Courier, monospace;
+}
+.elapsed-time-box {
+    font-size: 1.8em;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin: 0 auto 20px auto;
+    border: 1px solid;
+    display: block;
+    width: -moz-fit-content;
+    width: fit-content;
+}
+.elapsed-time-highlight {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+.countdown-highlight {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+.race-info-panel {
+    background-color: #f0f8ff;
+    border: 1px solid #b0c4de;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+.race-info-panel h3 { margin-top: 0; margin-bottom: 5px; }
+.race-info-panel p { margin: 5px 0; }
+
+/* --- Bulk Add Boats --- */
+#bulk-add-boats-section {
+    border: 1px solid #b0c4de;
+    background-color: #f0f8ff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+#bulk-add-boats-section h3 { margin-top: 0; color: #003366; }
+#bulk-boat-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: white;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+.bulk-boat-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+.bulk-boat-item:last-child { border-bottom: none; }
+.bulk-boat-item input[type="checkbox"] { width: auto; margin-right: 10px; }
+.bulk-boat-item label {
+    font-weight: normal;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    cursor: pointer;
+}
+.bulk-boat-details { font-size: 13px; }
+.bulk-add-actions button { padding: 6px 10px; font-size: 13px; }
+
+/* --- Short Course --- */
+#short-course-races-container {
+    margin-top: 25px;
+    border-top: 2px solid #003366;
+    padding-top: 15px;
+}
+.short-course-race-section {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+}
+
+/* --- Entries Header --- */
+.entries-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.entries-header button { padding: 4px 8px; font-size: 12px; margin-left: 15px; }
+
+/* --- Misc Layout --- */
+.actions { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.actions button { margin-right: 0; margin-bottom: 0; padding: 3px 6px; font-size: 10px; }
+#saved-boat-selector { margin-bottom: 20px; }
+#saved-boat-selector label { margin-bottom: 8px; }
+
+/* --- Loading Overlay --- */
+#loading-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 1.5em;
+}
+
+/* --- Gate / Access Screen --- */
+#gate-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: #f0f8ff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+#gate-screen h2 { color: #003366; margin-bottom: 20px; }
+#gate-screen input[type="text"] {
+    width: 250px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: center;
+}
+#gate-screen button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #003366;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0;
+}
+#gate-screen button:hover { background-color: #004080; }
+#access-error-message {
+    margin-top: 10px;
+    color: red;
+    font-weight: bold;
+}
+
+/* --- Calendar --- */
+#calendar-textarea {
+    font-family: monospace;
+    white-space: pre-wrap;
+    resize: vertical;
+    min-height: 200px;
+}
+.calendar-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.calendar-buttons button { margin-right: 0; }
+
+/* --- Save Status Indicator --- */
+#save-status {
+    position: fixed;
+    top: 10px;
+    right: 20px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 30000;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+.save-status-idle { background-color: white; color: #666; border-color: #ddd; }
+.save-status-saving { color: white; border-color: #dc3545; animation: flash-red 1s infinite; }
+.save-status-saved { background-color: #28a745; color: white; border-color: #218838; animation: none; }
+
+@keyframes flash-red {
+    0%   { background-color: #dc3545; color: white; }
+    50%  { background-color: white;   color: #dc3545; }
+    100% { background-color: #dc3545; color: white; }
+}

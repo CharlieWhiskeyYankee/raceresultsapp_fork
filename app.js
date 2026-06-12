@@ -394,6 +394,6 @@ function _delegate(containerId, event, handler) {
     if (!container) return;
     container.addEventListener(event, e => {
         const el = e.target.closest('[data-action]');
-        if (el && container.contains(el)) handler(e, el);
+        if (el && el.dataset.action && container.contains(el)) handler(e, el);
     });
 }
