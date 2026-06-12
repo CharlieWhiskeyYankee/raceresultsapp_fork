@@ -3,15 +3,13 @@
  * Pure utility and helper functions with no DOM or state dependencies.
  */
 
-'use strict';
-
 /**
  * Parses a time string in h:m:s, h m s, m:s, or m s format into total seconds.
  * Returns -1 if the string cannot be parsed or is out of range.
  * @param {string} timeStr
  * @returns {number}
  */
-function timeToSeconds(timeStr) {
+export function timeToSeconds(timeStr) {
     if (!timeStr) return -1;
     timeStr = String(timeStr).trim();
 
@@ -47,28 +45,26 @@ function timeToSeconds(timeStr) {
 }
 
 /**
- * Returns true if the supplied string represents a valid time in any
- * supported format (see timeToSeconds).
+ * Returns true if the supplied string represents a valid time.
  * @param {string} timeStr
  * @returns {boolean}
  */
-function isValidTimeFormat(timeStr) {
+export function isValidTimeFormat(timeStr) {
     if (!timeStr) return false;
     return timeToSeconds(String(timeStr).trim()) >= 0;
 }
 
 /**
  * Converts a total-seconds value to a zero-padded "HH:MM:SS" string.
- * Returns an empty string for invalid / negative input.
  * @param {number} seconds
  * @returns {string}
  */
-function secondsToTime(seconds) {
+export function secondsToTime(seconds) {
     if (isNaN(seconds) || seconds === null || seconds < 0) return '';
     seconds = Math.round(seconds);
-    const hours   = Math.floor(seconds / 3600);
-    let minutes   = Math.floor((seconds % 3600) / 60);
-    let secs      = seconds % 60;
+    const hours = Math.floor(seconds / 3600);
+    let minutes = Math.floor((seconds % 3600) / 60);
+    let secs    = seconds % 60;
     if (secs === 60)    { minutes += 1; secs = 0; }
     if (minutes === 60) { minutes = 0; }
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
@@ -81,18 +77,16 @@ function secondsToTime(seconds) {
  * @param {string} [plural]
  * @returns {string}
  */
-function pluralize(count, singular, plural = null) {
+export function pluralize(count, singular, plural = null) {
     return count === 1 ? singular : (plural || singular + 's');
 }
 
 /**
  * Escapes a value for safe interpolation into an HTML string.
- * Prevents stored XSS from user-supplied data (sail numbers, skipper names, etc.)
- * being injected into innerHTML template literals.
- * @param {*} value - Any value; will be coerced to string.
+ * @param {*} value
  * @returns {string}
  */
-function escapeHtml(value) {
+export function escapeHtml(value) {
     return String(value ?? '')
         .replace(/&/g,  '&amp;')
         .replace(/</g,  '&lt;')

@@ -225,9 +225,9 @@
                 <p class="start-time-display">Race Not Started</p>
                 <div class="elapsed-time-box elapsed-time-highlight">00:00:00</div>
                 <div>
-                    <button class="btn-warning" onclick="handleStartCountdown(event)">3 Min Countdown</button>
-                    <button class="btn-edit"    onclick="handleStartRace(event)">Start Race</button>
-                    <button class="btn-danger hidden" onclick="handleResetStartTime(event)">Reset Start Time</button>
+                    <button class="btn-warning" data-action="sc-countdown">3 Min Countdown</button>
+                    <button class="btn-edit"    data-action="sc-start">Start Race</button>
+                    <button class="btn-danger hidden" data-action="sc-reset">Reset Start Time</button>
                 </div>
             </div>
 
@@ -410,16 +410,7 @@
 
 
     <!-- ── Scripts (load-order matters: dependencies first) ──── -->
-    <script src="js/config.js"></script>
-    <script src="js/state.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/modal.js"></script>
-    <script src="js/session.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/results.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/handlers.js"></script>
-    <script src="js/app.js"></script>
+    <script type="module" src="js/app.js"></script>
 
 </body>
 </html>

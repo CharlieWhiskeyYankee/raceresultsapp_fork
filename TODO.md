@@ -61,35 +61,30 @@ and `app.js`. All affected handler functions converted to `async`.
 
 ---
 
-## 2. Convert to ES modules (`type="module"`)
+## ✅ #2 — Convert to ES modules (`type="module"`)
 
-**Why it matters**
-All JS files currently share a single global scope and depend on load-order
-declared in `index.html`. Any variable name collision across files causes a
-silent bug. There is no encapsulation.
+All JS files now use `export`/`import`. `index.html` loads only a single
+`<script type="module" src="js/app.js">`. Load-order `<script>` tags are gone.
+Each file explicitly declares its dependencies via `import`. The shared global
+scope is eliminated — name collisions between files are now impossible.
 
-**What to do**
-Add `type="module"` to the `<script src="js/app.js">` tag (the single entry
-point) and convert each file to use `export`/`import`. The load-order
-`<script>` tags in `index.html` can be reduced to just `app.js`. State
-variables (`entries`, `series`, etc.) should be imported where needed rather
-than accessed as globals.
+`state.js` exports a single `state` object whose properties are mutated
+directly by importers (`state.entries.push(...)`, `state.currentSeries = x`),
+which is the cleanest pattern for mutable shared state without setter boilerplate.
 
 ---
 
-## 1. Replace inline `onclick` attributes with proper event delegation
+## ✅ #1 — Replace inline `onclick` attributes with event delegation
 
-**Why it matters**
-The rendered HTML in `ui.js` emits strings like `onclick="handleFinButtonClick(this, 0)"`.
-This requires polluting `window` with handler references in `app.js`, couples
-the rendering layer tightly to the handler layer, and breaks Content Security
-Policy headers if those are ever added.
+Done as part of #2 (the two had to land together). All `onclick=` attributes
+have been removed from rendered HTML in `ui.js` and from `index.html`.
+All `window.xxx = handler` assignments have been removed from `app.js`.
 
-**What to do**
-Use event delegation on stable parent elements (e.g. `#entries-body`,
-`#short-course-races-container`). Read the action and index from `data-*`
-attributes on each row/cell. Remove all `window.xxx = ...` assignments from
-`app.js` and all `onclick=` attributes from `ui.js`.
+Rendered elements now carry `data-action` and `data-*` index attributes.
+`app.js` attaches one delegated listener per stable container via `_delegate()`,
+which routes to the correct handler by reading `data-action`. The only exception
+is `window._afterImport`, a one-line hook that lets `storage.js` trigger a UI
+refresh without importing from `ui.js` (which would create a circular dependency).
 
 ---
 
