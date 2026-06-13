@@ -5,7 +5,7 @@
  */
 
 import { YARDSTICK_DATA } from './config.js';
-import { state } from './state.js';
+import { state, addEntry, removeEntry, updateEntry, setEntries, clearEntries, setResults, clearResults, addSeries, updateSeriesAtIndex, removeSeriesAtIndex, setBoatList, addBoat, updateBoatAtIndex, removeBoatAtIndex, setCalendarText, addShortCourseRace, removeLastShortCourseRace, clearShortCourseSession, setShortCourseSessionRaces, setCurrentSeries, setCurrentRace, setEditMode } from './state.js';
 import { timeToSeconds, secondsToTime, isValidTimeFormat, pluralize } from './utils.js';
 import { showAlert, showConfirm, showToast } from './modal.js';
 import { triggerSave } from './storage.js';
@@ -78,7 +78,7 @@ export async function handleAddBoat() {
         if (state.entries.some(e => e.savedBoatId === entryData.savedBoatId)) {
             await showAlert(`Boat "${entryData.sailNumber}" is already in the pool.`); return;
         }
-        state.entries.push(entryData);
+        addEntry(entryData);
         state.shortCourseSessionRaces.forEach(race => {
             if (!race.entries.some(e => e.savedBoatId === entryData.savedBoatId)) {
                 race.entries.push({ ...entryData, status: 'DNS', elapsedTime: '' });
@@ -91,7 +91,7 @@ export async function handleAddBoat() {
         if (state.entries.some(e => e.savedBoatId === entryData.savedBoatId)) {
             await showAlert(`Boat "${entryData.sailNumber}" is already in this race.`); return;
         }
-        state.entries.push(entryData);
+        addEntry(entryData);
         renderEntriesTable();
     }
 
@@ -142,7 +142,7 @@ async function _updatePoolEntry(index) {
     if (state.entries.some((e, i) => i !== index && e.savedBoatId === entryData.savedBoatId)) {
         await showAlert(`Boat "${entryData.sailNumber}" is already in the pool.`); return;
     }
-    state.entries[index] = entryData;
+    setEntries(state.entries.map((e, i) => i === index ? entryData : e));
     state.shortCourseSessionRaces.forEach(race => {
         const e = race.entries.find(e => e.savedBoatId === entryData.savedBoatId);
         if (e) e.division = entryData.division;
@@ -182,7 +182,7 @@ export async function removeEntry(index) {
         const boatId = state.entries[index].savedBoatId;
         state.shortCourseSessionRaces.forEach(race => { race.entries = race.entries.filter(e => e.savedBoatId !== boatId); });
     }
-    state.entries.splice(index, 1);
+    removeEntry(index);
     if (state.currentSeries?.isShortCourse) { renderShortCoursePoolTable(); renderShortCourseSessionRaces(); }
     else renderEntriesTable();
 }
@@ -254,8 +254,9 @@ function _populateEditForm(entry, index, scRaceIndex, title) {
 
 export function updateEntryField(index, field, value) {
     if (index < 0 || index >= state.entries.length) return;
-    state.entries[index][field] = value;
-    if (field === 'status' && value !== 'finished') state.entries[index].elapsedTime = '';
+    const updated = { ...state.entries[index], [field]: value };
+    if (field === 'status' && value !== 'finished') updated.elapsedTime = '';
+    updateEntry(index, updated);
     if (field === 'status') renderEntriesTable();
 }
 
@@ -271,7 +272,7 @@ export function updateShortCourseEntryField(raceIdx, entryIdx, field, value) {
 export function updatePoolEntryDivision(index, value) {
     if (index < 0 || index >= state.entries.length) return;
     const boatId = state.entries[index].savedBoatId;
-    state.entries[index].division = value;
+    updateEntry(index, { division: value });
     state.shortCourseSessionRaces.forEach(race => {
         const e = race.entries.find(e => e.savedBoatId === boatId);
         if (e) e.division = value;
@@ -452,7 +453,7 @@ export async function deleteBoatFromList(id) {
     if (idx === -1) return;
     const boat = state.boatList[idx];
     if (!await showConfirm(`Delete ${boat.sailNumber} (${boat.skipper})?`, { danger: true })) return;
-    state.boatList.splice(idx, 1);
+    removeBoatAtIndex(idx);
     triggerSave();
     renderBoatListTable();
 }
@@ -496,9 +497,9 @@ export async function handleSaveBoat() {
     const boatData = { id: id || Date.now(), sailNumber: sailNum, boatClass, skipper, yardstick: ys, division };
     if (id) {
         const idx = state.boatList.findIndex(b => b.id === id);
-        if (idx !== -1) state.boatList[idx] = boatData; else state.boatList.push(boatData);
+        if (idx !== -1) updateBoatAtIndex(idx, boatData); else addBoat(boatData);
     } else {
-        state.boatList.push(boatData);
+        addBoat(boatData);
     }
 
     triggerSave();
@@ -533,7 +534,7 @@ export async function deleteSeries(id) {
     const s = state.series[idx];
     if (!await showConfirm(`DELETE Series "${s.name}" permanently?`, { danger: true, confirmText: 'Delete' })) return;
 
-    state.series.splice(idx, 1);
+    removeSeriesAtIndex(idx);
     triggerSave();
     refreshSeriesList();
     refreshSeriesDropdowns();
@@ -548,7 +549,7 @@ export async function deleteSeries(id) {
     });
 
     if (state.currentSeries?.id === id) {
-        state.currentSeries = null; state.currentRace = null; state.entries = []; state.results = []; state.shortCourseSessionRaces = [];
+        setCurrentSeries(null); setCurrentRace(null); clearEntries(); clearResults(); setShortCourseSessionRaces([]);
         if (document.getElementById('race-tab')?.classList.contains('active-tab'))    updateRaceEntryUI();
         if (document.getElementById('results-tab')?.classList.contains('active-tab')) loadRaceResults();
     }
@@ -600,7 +601,7 @@ export async function handleSaveSeries() {
         if (!isShortCourse)
             for (let i = 1; i <= racesPlanned; i++)
                 newSeries.races.push({ raceNumber: i, date: null, entries: [], results: [], startTime: null });
-        state.series.push(newSeries);
+        addSeries(newSeries);
         showToast(`Series "${name}" created.`, 'success');
     }
 
@@ -655,7 +656,7 @@ async function _calculateShortCourseResults() {
 async function _calculateStandardResults() {
     const map = new Map();
     state.entries.forEach(e => { if (e.savedBoatId) map.set(e.savedBoatId, e); });
-    state.entries = [...map.values()];
+    setEntries([...map.values()]);
     renderEntriesTable();
 
     if (!state.entries.length)                                      { await showAlert('Add at least one entry first.'); return; }
@@ -686,11 +687,11 @@ async function _calculateStandardResults() {
     target.races[raceIdx] = { ...target.races[raceIdx], date, entries: calculated.map(_entryFromResult), results: JSON.parse(JSON.stringify(calculated)) };
 
     triggerSave();
-    state.editMode = false;
+    setEditMode(false);
     document.getElementById('edit-mode-warning')?.classList.add('hidden');
     showToast(`Race ${state.currentRace} results saved for "${target.name}".`, 'success', 5000);
     refreshSeriesDropdowns();
-    state.results = calculated;
+    setResults(calculated);
     setActiveTab(document.getElementById('results-tab'));
 }
 
@@ -728,7 +729,7 @@ export async function handleCreateShortCourseRace() {
     const nums   = state.shortCourseSessionRaces.map(r => r.raceNumber);
     const next   = nums.length > 0 ? Math.max(...nums) + 1 : 1;
     const newEntries = JSON.parse(JSON.stringify(state.entries)).map(e => ({ ...e, status: '', elapsedTime: '' }));
-    state.shortCourseSessionRaces.push({ raceNumber: next, entries: newEntries, startTime: null });
+    addShortCourseRace({ raceNumber: next, entries: newEntries, startTime: null });
     renderShortCourseSessionRaces();
     updateCreateRaceButton();
     updateRemoveLastRaceButtonVisibility();
@@ -740,7 +741,7 @@ export async function handleRemoveLastShortCourseRace() {
     const last = state.shortCourseSessionRaces[state.shortCourseSessionRaces.length - 1];
     if (!await showConfirm(`Remove Race ${last.raceNumber}?`, { danger: true, confirmText: 'Remove' })) return;
     const removedIdx = state.shortCourseSessionRaces.length - 1;
-    state.shortCourseSessionRaces.pop();
+    removeLastShortCourseRace();
     renderShortCourseSessionRaces();
     updateCreateRaceButton();
     updateRemoveLastRaceButtonVisibility();
@@ -760,7 +761,7 @@ export async function handleClearShortCourseSession() {
         `Clear all ${state.shortCourseSessionRaces.length} ${pluralize(state.shortCourseSessionRaces.length, 'race', 'races')} and all pool entries?`,
         { danger: true, confirmText: 'Clear Session' }
     )) return;
-    state.shortCourseSessionRaces = []; state.entries = [];
+    clearShortCourseSession(); clearEntries();
     renderShortCoursePoolTable(); renderShortCourseSessionRaces();
     updateCreateRaceButton(); updateRemoveLastRaceButtonVisibility();
     clearSessionStorage();
@@ -779,7 +780,7 @@ export function handleAddSelectedBoats() {
             status: state.currentSeries?.isShortCourse ? 'pool' : '', elapsedTime: '',
         };
         if (state.entries.some(e => e.savedBoatId === entryData.savedBoatId)) { skipped++; return; }
-        state.entries.push(entryData); added++;
+        addEntry(entryData); added++;
         if (state.currentSeries?.isShortCourse) {
             state.shortCourseSessionRaces.forEach(race => {
                 if (!race.entries.some(e => e.savedBoatId === entryData.savedBoatId))
@@ -802,7 +803,7 @@ export function handleAddSelectedBoats() {
 
 export function saveCalendarText() {
     const ta = document.getElementById('calendar-textarea');
-    if (ta) { state.savedCalendarText = ta.value; triggerSave(); showToast('Calendar queued for saving.', 'success'); }
+    if (ta) { setCalendarText(ta.value); triggerSave(); showToast('Calendar queued for saving.', 'success'); }
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────────

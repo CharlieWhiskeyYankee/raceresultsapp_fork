@@ -13,7 +13,7 @@
  */
 
 import { YARDSTICK_DATA } from './config.js';
-import { state } from './state.js';
+import { state, clearEntries, setTimerInterval } from './state.js';
 import { showAlert, showConfirm, showToast } from './modal.js';
 import { restoreSessionFromStorage } from './session.js';
 import {
@@ -63,7 +63,7 @@ async function initApp() {
     initYardsticks();
 
     if (state.raceTimerDisplayInterval) clearInterval(state.raceTimerDisplayInterval);
-    state.raceTimerDisplayInterval = setInterval(updateAllVisibleTimers, 1000);
+    setTimerInterval(setInterval(updateAllVisibleTimers, 1000));
 
     updateSaveStatus('idle');
 
@@ -224,7 +224,7 @@ function _bindStaticListeners() {
         if (state.currentSeries?.isShortCourse) {
             if (!state.entries.length) { await showAlert('Pool is already empty.'); return; }
             if (await showConfirm('Clear all boats from the pool?')) {
-                state.entries = [];
+                clearEntries();
                 renderShortCoursePoolTable();
                 clearEntryForm();
             }
@@ -232,7 +232,7 @@ function _bindStaticListeners() {
             if (!state.currentRace) { await showAlert('Select a race first.'); return; }
             if (!state.entries.length) { await showAlert('Entry list is already empty.'); return; }
             if (await showConfirm(`Clear all entries for Race ${state.currentRace}?`)) {
-                state.entries = [];
+                clearEntries();
                 renderEntriesTable();
                 clearEntryForm();
             }

@@ -4,7 +4,7 @@
  */
 
 import { WEB_APP_URL, EXPORT_VERSION } from './config.js';
-import { state } from './state.js';
+import { state, setIsSaving, setSaveQueued, setSeries, setBoatList, setCalendarText, addSeries, updateSeriesAtIndex } from './state.js';
 import { timeToSeconds, secondsToTime } from './utils.js';
 import { showAlert, showConfirm, showToast } from './modal.js';
 
@@ -43,7 +43,7 @@ let _saveRetryTimeoutId  = null;
 
 export function triggerSave() {
     if (state.isSaving) {
-        state.saveQueued = true;
+        setSaveQueued(true);
         updateSaveStatus('saving', 'Changes queued...');
         return;
     }
@@ -54,7 +54,7 @@ export function triggerSave() {
 
 async function _saveDataToGoogleSheet() {
     if (state.isSaving) return;
-    state.isSaving = true;
+    setIsSaving(true);
     updateSaveStatus('saving');
     console.log(`Saving to Google Sheet... (attempt ${_saveRetryCount + 1})`);
 
@@ -93,7 +93,7 @@ async function _saveDataToGoogleSheet() {
             updateSaveStatus('saving', `Save failed — retrying in ${delaySecs}s…`);
             showToast(`Save failed. Retrying in ${delaySecs}s… (${_saveRetryCount}/${SAVE_RETRY_MAX})`, 'warning', delay - 500);
             _saveRetryTimeoutId = setTimeout(() => {
-                state.isSaving = false;
+                setIsSaving(false);
                 _saveRetryTimeoutId = null;
                 _saveDataToGoogleSheet();
             }, delay);
@@ -108,9 +108,9 @@ async function _saveDataToGoogleSheet() {
             _saveRetryCount = 0;
         }
     } finally {
-        state.isSaving = false;
+        setIsSaving(false);
         if (state.saveQueued) {
-            state.saveQueued = false;
+            setSaveQueued(false);
             setTimeout(triggerSave, 100);
         }
     }
@@ -128,13 +128,13 @@ export async function loadDataFromGoogleSheet() {
 
         if (data.status !== 'success') {
             showToast('Could not load cloud data: ' + (data.message || 'Unknown error') + '. Starting empty.', 'error', 10000);
-            state.series = []; state.boatList = []; state.savedCalendarText = '';
+            setSeries([]); setBoatList([]); setCalendarText('');
             return;
         }
 
-        state.boatList          = _parseBoatList(data.boatListData);
-        state.series            = _parseSeriesData(data.seriesData);
-        state.savedCalendarText = data.calendarText || '';
+        setBoatList(_parseBoatList(data.boatListData));
+        setSeries(_parseSeriesData(data.seriesData));
+        setCalendarText(data.calendarText || '');
 
         const textarea = document.getElementById('calendar-textarea');
         const calTab   = document.getElementById('calendar-tab');
@@ -143,7 +143,7 @@ export async function loadDataFromGoogleSheet() {
     } catch (error) {
         console.error('Fetch error while loading:', error);
         showToast('Could not connect to cloud: ' + error.message + '. Starting empty.', 'error', 10000);
-        state.series = []; state.boatList = []; state.savedCalendarText = '';
+        setSeries([]); setBoatList([]); setCalendarText('');
     } finally {
         if (overlay) overlay.classList.add('hidden');
     }
@@ -272,9 +272,9 @@ export function importData(event) {
             const data = JSON.parse(e.target.result);
             if (!data.seriesData && !data.boatListData) { await showAlert('Invalid file format.'); return; }
             if (!await showConfirm('This will REPLACE all current data. Are you sure?', { danger: true, confirmText: 'Replace All Data' })) return;
-            state.series            = _parseSeriesData(data.seriesData   || []);
-            state.boatList          = _parseBoatList(data.boatListData   || []);
-            state.savedCalendarText = data.calendarText || '';
+            setSeries(_parseSeriesData(data.seriesData   || []));
+            setBoatList(_parseBoatList(data.boatListData || []));
+            setCalendarText(data.calendarText || '');
             triggerSave();
             window._afterImport?.();
             showToast('Data imported successfully.', 'success');
@@ -298,9 +298,9 @@ export function importSingleSeries(event) {
             const idx = state.series.findIndex(s => s.id === parsed.id);
             if (idx !== -1) {
                 if (!await showConfirm(`Series "${parsed.name}" already exists. Overwrite?`, { danger: true, confirmText: 'Overwrite' })) return;
-                state.series[idx] = parsed;
+                updateSeriesAtIndex(idx, parsed);
             } else {
-                state.series.push(parsed);
+                addSeries(parsed);
             }
             triggerSave();
             window._afterImport?.();
@@ -321,7 +321,7 @@ export function importBoatList(event) {
             const rawBoats = data.boatListData || (Array.isArray(data) ? data : null);
             if (!rawBoats) { await showAlert('Invalid file: missing boatListData.'); return; }
             if (!await showConfirm('This will REPLACE the current boat list. Are you sure?', { danger: true, confirmText: 'Replace Boat List' })) return;
-            state.boatList = _parseBoatList(rawBoats);
+            setBoatList(_parseBoatList(rawBoats));
             triggerSave();
             window._afterImport?.();
             showToast('Boat list imported.', 'success');

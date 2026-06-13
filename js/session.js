@@ -4,7 +4,7 @@
  * accidental page refresh during a race does not lose all entered data.
  */
 
-import { state } from './state.js';
+import { state, setShortCourseSessionRaces, setEntries, setCurrentSeries } from './state.js';
 
 const SESSION_STORAGE_KEY = 'lsc_sc_session';
 
@@ -48,9 +48,9 @@ export function restoreSessionFromStorage() {
             clearSessionStorage(); return false;
         }
 
-        state.shortCourseSessionRaces = payload.races;
-        state.entries                 = Array.isArray(payload.poolEntries) ? payload.poolEntries : [];
-        state.currentSeries           = matchingSeries;
+        setShortCourseSessionRaces(payload.races);
+        setEntries(Array.isArray(payload.poolEntries) ? payload.poolEntries : []);
+        setCurrentSeries(matchingSeries);
 
         console.log(`Restored SC session for "${matchingSeries.name}" with ${state.shortCourseSessionRaces.length} race(s).`);
         return true;

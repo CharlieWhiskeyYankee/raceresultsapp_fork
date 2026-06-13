@@ -8,7 +8,7 @@
  */
 
 import { YARDSTICK_DATA, RACE_STATUSES, DIVISIONS } from './config.js';
-import { state } from './state.js';
+import { state, setEditMode, setResults, setEntries, clearEntries, setCurrentSeries, setCurrentRace, setShortCourseSessionRaces } from './state.js';
 import { secondsToTime, escapeHtml, pluralize } from './utils.js';
 import { deduplicateResults, calculateSeriesStandings } from './results.js';
 
@@ -24,7 +24,7 @@ export function setActiveTab(tabElement) {
     if (btn) btn.classList.add('active-button');
 
     if (tabElement.id !== 'race-tab') {
-        state.editMode = false;
+        setEditMode(false);
         document.getElementById('edit-mode-warning')?.classList.add('hidden');
     }
     if (tabElement.id !== 'boat-list-tab') document.getElementById('boat-list-form')?.classList.add('hidden');
@@ -268,7 +268,7 @@ export function loadRaceResults() {
     if (!state.currentSeries || typeof state.currentRace !== 'number') { renderRaceResults(); return; }
     const s    = state.series.find(s => s.id === state.currentSeries.id);
     const race = s?.races.find(r => r.raceNumber === state.currentRace);
-    if (race?.results?.length > 0) state.results = race.results;
+    if (race?.results?.length > 0) setResults(race.results);
     renderRaceResults();
 }
 
@@ -485,8 +485,8 @@ export function updateRaceEntryUI() {
     const saveEntriesBtn = document.getElementById('save-current-entries-btn');
     const saveScBtn      = document.getElementById('save-sc-session-btn');
 
-    state.entries = [];
-    state.shortCourseSessionRaces = [];
+    clearEntries();
+    setShortCourseSessionRaces([]);
     raceDateGroup?.classList.add('hidden');
     saveEntriesBtn?.classList.add('hidden');
     saveScBtn?.classList.add('hidden');
@@ -494,14 +494,14 @@ export function updateRaceEntryUI() {
 
     const seriesId = selectSeries?.value;
     if (!seriesId) {
-        state.currentSeries = null; state.currentRace = null;
+        setCurrentSeries(null); setCurrentRace(null);
         switchToStandardRaceUI();
         if (selectRace) selectRace.innerHTML = '<option value="">-- Select Race --</option>';
         renderEntriesTable(); clearEntryForm(); renderShortCoursePoolTable(); renderShortCourseSessionRaces(); updateRaceStartUI();
         return;
     }
 
-    state.currentSeries = state.series.find(s => s.id === parseInt(seriesId)) || null;
+    setCurrentSeries(state.series.find(s => s.id === parseInt(seriesId)) || null);
     if (!state.currentSeries) { updateRaceEntryUI(); return; }
 
     if (state.currentSeries.isShortCourse) {
@@ -533,7 +533,7 @@ export function updateRaceInfoAndEntries() {
     const editModeWarning = document.getElementById('edit-mode-warning');
 
     const noRace = () => {
-        state.entries = []; state.currentRace = null; state.editMode = false;
+        clearEntries(); setCurrentRace(null); setEditMode(false);
         editModeWarning?.classList.add('hidden');
         raceDateGroup?.classList.add('hidden');
         saveEntriesBtn?.classList.add('hidden');
@@ -543,8 +543,9 @@ export function updateRaceInfoAndEntries() {
     if (!state.currentSeries || state.currentSeries.isShortCourse) { noRace(); return; }
     if (!selectRace?.value) { noRace(); return; }
 
-    state.currentRace = parseInt(selectRace.value);
-    if (isNaN(state.currentRace)) { state.currentRace = null; noRace(); return; }
+    const parsedRace = parseInt(selectRace.value);
+    if (isNaN(parsedRace)) { setCurrentRace(null); noRace(); return; }
+    setCurrentRace(parsedRace);
 
     saveEntriesBtn?.classList.remove('hidden');
     raceDateGroup?.classList.remove('hidden');
@@ -555,15 +556,15 @@ export function updateRaceInfoAndEntries() {
 
     const savedEntries = race?.entries || [];
     if (savedEntries.length > 0) {
-        state.entries  = JSON.parse(JSON.stringify(savedEntries));
-        state.editMode = !!(race?.results?.length > 0);
+        setEntries(JSON.parse(JSON.stringify(savedEntries)));
+        setEditMode(!!(race?.results?.length > 0));
         if (state.editMode && editModeWarning) {
             editModeWarning.classList.remove('hidden');
             editModeWarning.textContent = `⚠ Race ${state.currentRace} has saved results. Editing entries may require recalculating.`;
         }
     } else {
-        state.entries  = [];
-        state.editMode = false;
+        clearEntries();
+        setEditMode(false);
         editModeWarning?.classList.add('hidden');
     }
 
@@ -606,7 +607,7 @@ export function switchToShortCourseUI() {
     if (ab) ab.textContent = 'Add Single Boat';
     if (ca) ca.textContent = 'Clear Current Entries';
     if (sr) sr.innerHTML   = '';
-    state.currentRace = null;
+    setCurrentRace(null);
 
     if (dg) dg.classList.remove('hidden');
     if (dl) dl.textContent = 'Session Date:';
