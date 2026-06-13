@@ -5,7 +5,7 @@
  */
 
 import { YARDSTICK_DATA } from './config.js';
-import { state, addEntry, removeEntry, updateEntry, setEntries, clearEntries, setResults, clearResults, addSeries, updateSeriesAtIndex, removeSeriesAtIndex, setBoatList, addBoat, updateBoatAtIndex, removeBoatAtIndex, setCalendarText, addShortCourseRace, removeLastShortCourseRace, clearShortCourseSession, setShortCourseSessionRaces, setCurrentSeries, setCurrentRace, setEditMode } from './state.js';
+import { state, addEntry, removeEntry as _removeEntryFromState, updateEntry, setEntries, clearEntries, setResults, clearResults, addSeries, updateSeriesAtIndex, removeSeriesAtIndex, setBoatList, addBoat, updateBoatAtIndex, removeBoatAtIndex, setCalendarText, addShortCourseRace, removeLastShortCourseRace, clearShortCourseSession, setShortCourseSessionRaces, setCurrentSeries, setCurrentRace, setEditMode } from './state.js';
 import { timeToSeconds, secondsToTime, isValidTimeFormat, pluralize } from './utils.js';
 import { showAlert, showConfirm, showToast } from './modal.js';
 import { triggerSave } from './storage.js';
@@ -182,7 +182,7 @@ export async function removeEntry(index) {
         const boatId = state.entries[index].savedBoatId;
         state.shortCourseSessionRaces.forEach(race => { race.entries = race.entries.filter(e => e.savedBoatId !== boatId); });
     }
-    removeEntry(index);
+    _removeEntryFromState(index);
     if (state.currentSeries?.isShortCourse) { renderShortCoursePoolTable(); renderShortCourseSessionRaces(); }
     else renderEntriesTable();
 }
