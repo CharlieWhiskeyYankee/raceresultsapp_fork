@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [large_refactor]
   pull_request:
-    branches: [main]
+    branches: [large_refactor]
 
 jobs:
   test:
