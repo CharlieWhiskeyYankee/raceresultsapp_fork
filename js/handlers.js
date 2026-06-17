@@ -331,6 +331,8 @@ export async function handleFinButtonClick(btn, entryIndex, scIdx = -1) {
     triggerSave();
     if (scIdx >= 0) { saveSessionToStorage(); renderShortCourseSessionRaces(); }
     else renderEntriesTable();
+
+    await _checkAllFinished(scIdx);
 }
 
 export async function handleSailNumberClick(entryIndex, scIdx = -1) {
@@ -354,6 +356,50 @@ export async function handleSailNumberClick(entryIndex, scIdx = -1) {
     triggerSave();
     if (scIdx >= 0) { saveSessionToStorage(); renderShortCourseSessionRaces(); }
     else renderEntriesTable();
+
+    await _checkAllFinished(scIdx);
+}
+
+/**
+ * Called after every finish-time recording. If every entry in the current
+ * race now has a non-empty status (i.e. no boat is still unaccounted for),
+ * prompts the user to end the race and stop the timer.
+ *
+ * @param {number} scIdx - Short course race index, or -1 for a standard race.
+ */
+async function _checkAllFinished(scIdx) {
+    // Only relevant when the timer is running
+    const timerActive = document.getElementById('use-race-start-time-checkbox')?.checked;
+    if (!timerActive) return;
+
+    // Get the entries for the relevant race context
+    let entries;
+    if (scIdx >= 0) {
+        entries = state.shortCourseSessionRaces[scIdx]?.entries;
+    } else {
+        entries = state.entries;
+    }
+
+    if (!entries || entries.length === 0) return;
+
+    // All boats must have a non-empty status (finished, DNF, DNS, etc.)
+    const allAccountedFor = entries.every(e => e.status !== '');
+    if (!allAccountedFor) return;
+
+    const confirmed = await showConfirm(
+        `All ${entries.length} ${pluralize(entries.length, 'boat')} have been accounted for.\n\nStop the race timer?`,
+        { confirmText: 'Stop Timer', cancelText: 'Keep Running' }
+    );
+    if (!confirmed) return;
+
+    // Stop the timer by clearing the start time
+    if (scIdx >= 0) {
+        const race = state.shortCourseSessionRaces[scIdx];
+        if (race) { race.startTime = null; saveSessionToStorage(); renderShortCourseSessionRaces(); triggerSave(); }
+    } else {
+        const race = state.currentSeries?.races.find(r => r.raceNumber === state.currentRace);
+        if (race) { race.startTime = null; updateRaceStartUI(); triggerSave(); }
+    }
 }
 
 function _persistEntryChange(entry, scIdx) {
